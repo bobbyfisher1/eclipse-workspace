@@ -11,20 +11,39 @@ import org.example.entities.entities.Model
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.example.entities.entities.EntityType
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 @RunWith(XtextRunner)
 @InjectWith(EntitiesInjectorProvider)
 class EntitiesParsingTest {
-	@Inject
-	ParseHelper<Model> parseHelper
-	
+	@Inject extension ParseHelper<Model>;
+	@Inject extension ValidationTestHelper;
+
 	@Test
-	def void loadModel() {
-		val result = parseHelper.parse('''
-			Hello Xtext!
-		''')
-		Assert.assertNotNull(result)
-		val errors = result.eResource.errors
-		Assert.assertTrue('''Unexpected errors: «errors.join(", ")»''', errors.isEmpty)
+	def void testParsing() {
+
+		val model = '''
+			entity MyEntity {
+			    MyEntity attribute;
+			}
+		'''.parse
+
+		val entity = model.entities.get(0)
+		Assert.assertEquals("MyEntity", entity.name)
+
+		val attribute = entity.attributes.get(0)
+		Assert.assertEquals("attribute", attribute.name);
+		Assert.assertEquals("MyEntity", (attribute.type.elementType as EntityType).entity.name);
 	}
+
+	@Test
+	def void testCorrectParsing() {
+		'''
+			entity MyEntity {
+				MyEntity attribute;
+			}
+		'''.parse.assertNoErrors;
+	}
+
 }
