@@ -33,4 +33,39 @@ class EntitiesValidatorTest {
 			"cycle in hierarchy of entity '" + entityName + "'"
 		)
 	}
+
+	@Test
+	def void testCycleInEntityHierarchy() {
+		'''
+			entity A extends B {}
+			entity B extends C {}
+			entity C extends A{}
+		'''.parse => [
+			assertCycleInHierarchy("A")
+			assertCycleInHierarchy("C")
+			assertCycleInHierarchy("B")
+		]
+	}
+
+	@Test
+	def void testCycleInHierarchyErrorPosition() {
+		val testInput = '''
+			entity MyEntity extends MyEntity {
+			}
+		'''
+		testInput.parse.assertError(
+			EntitiesPackage.eINSTANCE.entity,
+			EntitiesValidator.HIERARCHY_CYCLE,
+			testInput.lastIndexOf("MyEntity"), // offset
+			"MyEntity".length // length
+		)
+	}
+	
+	@Test
+	def void testValidHierarchy(){
+		'''
+		entity FirstEntity  {}
+		entity SecondEntity extends FirstEntity{}
+		'''.parse.assertNoErrors
+	}
 }

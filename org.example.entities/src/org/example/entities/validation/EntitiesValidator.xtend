@@ -33,6 +33,8 @@ class EntitiesValidator extends AbstractEntitiesValidator {
 //					INVALID_NAME)
 //		}
 //	}
+
+	//checks if entities don't cycle in hierarchy
 	@Check
 	def checkNoCycleInEntityHierarchy(Entity entity) {
 		if (entity.superType === null)
